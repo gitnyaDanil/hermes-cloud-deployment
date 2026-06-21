@@ -72,3 +72,25 @@ pip3 install litellm
 systemctl --user start litellm
 ```
 *   **`start litellm`**: Powers on the newly created `litellm.service` file we wrote, initiating the proxy on port `4000` in the background so Hermes can connect to it.
+
+---
+
+## 5. Git Credential Debugging
+
+When testing restricted tokens, Git sometimes caches broken tokens globally, throwing 403 errors on other projects. We used these commands to purge the global cache.
+
+```bash
+cmdkey /list | findstr github
+```
+*   **`cmdkey /list`**: A Windows command that lists all saved passwords and credentials in the Windows Credential Manager.
+*   **`findstr github`**: Filters the list to only show saved credentials related to GitHub.
+
+```bash
+cmdkey /delete:LegacyGeneric:target=git:https://github.com
+```
+*   **`cmdkey /delete`**: Forcefully deletes a specific cached password record, clearing out the ghost token.
+
+```bash
+git config --global --unset credential.helper
+```
+*   **`git config --global --unset`**: Removes a configuration setting from the global `.gitconfig` file. In this case, we stopped Git from automatically saving passwords globally so tokens stay isolated to local folders.
