@@ -94,3 +94,31 @@ cmdkey /delete:LegacyGeneric:target=git:https://github.com
 git config --global --unset credential.helper
 ```
 *   **`git config --global --unset`**: Removes a configuration setting from the global `.gitconfig` file. In this case, we stopped Git from automatically saving passwords globally so tokens stay isolated to local folders.
+
+---
+
+## 6. Guaranteeing 24/7 Agent Uptime
+
+If a server crashes or reboots, the Hermes AI Agent will remain offline until manually restarted. To guarantee 24/7 uptime without human intervention, we registered the agent directly into the Linux `systemd` manager.
+
+```bash
+hermes gateway install
+```
+*   **`hermes gateway install`**: An interactive command that automatically generates a `systemd` service file for the Hermes Agent. When prompted, we configured it to automatically start the gateway on system boot. 
+
+```bash
+systemctl --user start hermes-gateway
+```
+*   **`systemctl --user start`**: Immediately powers on the newly installed Hermes service in the background. Because it is managed by systemd, Linux will autonomously reboot the agent if it ever crashes.
+
+```bash
+systemctl --user status hermes-gateway
+```
+*   **`systemctl --user status`**: Checks the live health of the background service, confirming it is active and displaying the amount of memory it is currently using.
+
+```bash
+journalctl --user -u hermes-gateway -f
+```
+*   **`journalctl`**: The Linux log viewer.
+*   **`-u hermes-gateway`**: Filters the logs to strictly show the Hermes Agent.
+*   **`-f`**: Stands for "follow." It streams the logs live to the terminal, which is critical for debugging why the agent might not be responding to messages.
