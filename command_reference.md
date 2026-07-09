@@ -139,3 +139,15 @@ tar -czvf hermes_wsl_backup.tar.gz --exclude='.hermes/image_cache' --exclude='.h
 scp -i C:\Users\Daniel\.ssh\gcp_hermes danielpolii19@<YOUR_VM_EXTERNAL_IP>:~/hermes_wsl_backup.tar.gz C:\Users\Daniel\.gemini\antigravity\scratch\
 ```
 *   **`scp`**: Secure Copy Protocol. Uses SSH to securely download the `.tar.gz` file from the remote Google Cloud server to the local Windows machine without exposing data to the public internet.
+
+---
+
+## 8. Model Context Protocol (MCP) Tool Connections
+
+To give the Hermes Agent the ability to interact with the outside world (like searching the web, reading emails, or applying to jobs), we connect it to external tool registries like Composio using the Model Context Protocol.
+
+```bash
+hermes mcp add composio --url 'https://backend.composio.dev/v3/mcp/...'
+```
+*   **`hermes mcp add composio`**: Tells the Hermes agent to register a new external tool provider named "composio" into its configuration.
+*   **`--url`**: Specifies the exact Server-Sent Events (SSE) endpoint URL where the external tools are hosted. This allows Hermes to use the tools securely over the internet without installing them locally.
