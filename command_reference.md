@@ -122,3 +122,20 @@ journalctl --user -u hermes-gateway -f
 *   **`journalctl`**: The Linux log viewer.
 *   **`-u hermes-gateway`**: Filters the logs to strictly show the Hermes Agent.
 *   **`-f`**: Stands for "follow." It streams the logs live to the terminal, which is critical for debugging why the agent might not be responding to messages.
+
+---
+
+## 7. GCP to WSL Backup Pipeline
+
+To migrate or backup the Hermes environment from the cloud to a local machine (like WSL), we compress the "brain", proxy config, and systemd services into a single archive.
+
+```bash
+tar -czvf hermes_wsl_backup.tar.gz --exclude='.hermes/image_cache' --exclude='.hermes/audio_cache' --exclude='.hermes/sandboxes' --exclude='.hermes/node' --exclude='.hermes/hermes-agent/venv' --exclude='.hermes/hermes-agent/node_modules' --exclude='__pycache__' .hermes .litellm .config/systemd/user
+```
+*   **`tar -czvf`**: Creates (`c`), zips (`z`), verbosely lists (`v`), into a file (`f`).
+*   **`--exclude`**: Ignores heavy caching folders and environment dependencies (`node_modules`, `venv`) that would make the backup too large. The `.hermes` folder contains the agent's vectorized memories, short-term conversational state database, and System Prompt SOUL.
+
+```powershell
+scp -i C:\Users\Daniel\.ssh\gcp_hermes danielpolii19@<YOUR_VM_EXTERNAL_IP>:~/hermes_wsl_backup.tar.gz C:\Users\Daniel\.gemini\antigravity\scratch\
+```
+*   **`scp`**: Secure Copy Protocol. Uses SSH to securely download the `.tar.gz` file from the remote Google Cloud server to the local Windows machine without exposing data to the public internet.
