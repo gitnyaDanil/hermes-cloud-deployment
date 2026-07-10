@@ -151,3 +151,16 @@ hermes mcp add composio --url 'https://backend.composio.dev/v3/mcp/...'
 ```
 *   **`hermes mcp add composio`**: Tells the Hermes agent to register a new external tool provider named "composio" into its configuration.
 *   **`--url`**: Specifies the exact Server-Sent Events (SSE) endpoint URL where the external tools are hosted. This allows Hermes to use the tools securely over the internet without installing them locally.
+
+---
+
+## 9. Verifying Backup Integrity
+
+When migrating the agent to a new environment, it's crucial to verify that the conversation databases and API configurations were not corrupted during the transfer.
+
+```bash
+python -c "import sqlite3; db=sqlite3.connect('.hermes/state.db'); print(db.execute('PRAGMA integrity_check;').fetchone()[0])"
+```
+*   **`python -c`**: Tells Python to execute a single, inline string of code without needing to create a `.py` file.
+*   **`import sqlite3`**: Imports the standard library module to interact with SQLite databases.
+*   **`PRAGMA integrity_check;`**: A low-level SQLite command that scans the entire `state.db` database file for missing indices, malformed records, or structural corruption, returning `ok` if the database is perfectly healthy.
