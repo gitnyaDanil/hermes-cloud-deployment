@@ -147,10 +147,16 @@ scp -i C:\Users\Daniel\.ssh\gcp_hermes danielpolii19@<YOUR_VM_EXTERNAL_IP>:~/her
 To give the Hermes Agent the ability to interact with the outside world (like searching the web, reading emails, or applying to jobs), we connect it to external tool registries like Composio using the Model Context Protocol.
 
 ```bash
-hermes mcp add composio --url 'https://backend.composio.dev/v3/mcp/...'
+hermes mcp add composio --url https://connect.composio.dev/mcp --auth header
 ```
 *   **`hermes mcp add composio`**: Tells the Hermes agent to register a new external tool provider named "composio" into its configuration.
-*   **`--url`**: Specifies the exact Server-Sent Events (SSE) endpoint URL where the external tools are hosted. This allows Hermes to use the tools securely over the internet without installing them locally.
+*   **`--url`**: Specifies the exact SSE or HTTP endpoint where the external tools are hosted.
+*   **`--auth header`**: Specifies that the server requires custom HTTP header authentication, forcing Hermes to securely prompt you for the API key and header name (e.g. `x-consumer-api-key`).
+
+```bash
+hermes mcp test composio
+```
+*   **`hermes mcp test`**: Runs a connection diagnostics sequence on the registered Composio server. It tests the connection speed, sends a handshake request, and lists all active tools discovered.
 
 ---
 
@@ -164,3 +170,35 @@ python -c "import sqlite3; db=sqlite3.connect('.hermes/state.db'); print(db.exec
 *   **`python -c`**: Tells Python to execute a single, inline string of code without needing to create a `.py` file.
 *   **`import sqlite3`**: Imports the standard library module to interact with SQLite databases.
 *   **`PRAGMA integrity_check;`**: A low-level SQLite command that scans the entire `state.db` database file for missing indices, malformed records, or structural corruption, returning `ok` if the database is perfectly healthy.
+
+---
+
+## 10. Diagnostics, Health & Status
+
+We use these commands to inspect the overall state of the server, check configured API keys, and run diagnostic troubleshooting checks.
+
+```bash
+hermes status
+```
+*   **`hermes status`**: Displays a comprehensive overview of the active Hermes environment: Python version, active model, configured API keys (and which ones are missing), messaging platform status (e.g., Telegram active), systemd PID, and active session count.
+
+```bash
+hermes doctor
+```
+*   **`hermes doctor`**: Runs a suite of diagnostic tests on the VM: checks python package requirements, configuration schema compatibility, directory permissions, and tests connection latency to all configured LLM providers in parallel.
+
+---
+
+## 11. Scheduled Task Management (Cron)
+
+Hermes has an internal cron scheduler running inside its server daemon. We use these commands to inspect and prune scheduled background briefings or automations.
+
+```bash
+hermes cron list
+```
+*   **`hermes cron list`**: Lists all active scheduled tasks in `jobs.json` with their job ID, custom prompt, and next scheduled execution timestamp.
+
+```bash
+hermes cron remove <JOB_ID>
+```
+*   **`hermes cron remove`**: Deletes a specific scheduled task permanently using its unique job ID. Useful for removing duplicate or expired cron entries.
