@@ -112,6 +112,16 @@ systemctl --user start hermes-gateway
 *   **`systemctl --user start`**: Immediately powers on the newly installed Hermes service in the background. Because it is managed by systemd, Linux will autonomously reboot the agent if it ever crashes.
 
 ```bash
+systemctl --user enable hermes-gateway
+```
+*   **`systemctl --user enable`**: Configures the service to automatically load and run on system startup, ensuring it survives host VM reboots without manual intervention.
+
+```bash
+systemctl --user is-active hermes-gateway
+```
+*   **`systemctl --user is-active`**: Returns the running state (`active` or `inactive`) of the service. Useful for quick scripting health checks.
+
+```bash
 systemctl --user status hermes-gateway
 ```
 *   **`systemctl --user status`**: Checks the live health of the background service, confirming it is active and displaying the amount of memory it is currently using.
@@ -202,3 +212,26 @@ hermes cron list
 hermes cron remove <JOB_ID>
 ```
 *   **`hermes cron remove`**: Deletes a specific scheduled task permanently using its unique job ID. Useful for removing duplicate or expired cron entries.
+
+---
+
+## 12. Local System Specifications (Windows)
+
+Before transitioning your agent workflow locally, use these commands in PowerShell to inspect your laptop's hardware capabilities and memory availability.
+
+```powershell
+Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores
+```
+*   **`Get-CimInstance Win32_Processor`**: Queries the Windows Management Instrumentation (WMI) database for information about the CPU.
+*   **`NumberOfCores`**: Displays the count of physical cores, useful for determining how many thread resources are available for local models.
+
+```powershell
+[Math]::Round((Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum / 1GB)
+```
+*   **`Get-CimInstance Win32_PhysicalMemory`**: Queries physical memory stick metrics.
+*   **`Measure-Object -Property Capacity -Sum`**: Sums up the raw capacity bytes of all physical RAM modules installed, converting them to gigabytes (GB) to verify system headroom.
+
+```powershell
+Get-CimInstance Win32_VideoController | Select-Object Name
+```
+*   **`Win32_VideoController`**: Retrieves the graphic cards installed (e.g. dedicated NVIDIA RTX card vs integrated Intel card) to confirm if local LLM acceleration is supported.

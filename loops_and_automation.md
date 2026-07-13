@@ -25,8 +25,12 @@ Linux servers are designed to kill all background tasks when an SSH connection c
 **What it does:** Completely automates version control and code backups.
 **How it works:**
 We have autonomous background agents (cron schedules) running directly on the local machine to manage Git.
-- **5:00 PM Loop:** An agent wakes up, reads our chat transcript, and extracts any new terminal commands we learned, formatting them into `command_reference.md`.
-- **6:00 PM Loop:** A second agent wakes up, scans the `hermes-portfolio` folder for changes, and runs `git add .` and `git commit` automatically. It uses strict "URL Binding" to authenticate securely without breaking the global Windows Credential Manager.
+- **9:00 AM Loop (Standup):** An agent wakes up every morning, compiles yesterday's git logs and task progress into `daily_standup.md`, and sends the standup briefing directly to your Telegram chat via the VM's API connection.
+- **5:00 PM Loop (Documentation):** An agent wakes up, reads our chat transcript, and extracts any new terminal commands we learned, formatting them into `command_reference.md`.
+- **6:00 PM Loop (Staging):** An agent scans the `hermes-portfolio` folder for changes, and runs `git add .` and `git commit` automatically.
+- **6:05 PM Loop (Push Backup):** A staggered agent that runs 5 minutes after the staging loop, checking `hermes-agent-project` for modifications, committing, and pushing them to your remote GitHub backup repository.
+- **Weekly VM Backup (Saturday 9:00 AM / Cron: `0 9 * * 6`):** An agent wakes up, SSHs into the GCP VM to compress the active folders (excluding heavy dependencies and media caches), downloads the full `tar.gz` archive to your local backups directory with a datestamp using SCP, and purges the remote archive on the VM to save server space. This schedule runs for 7 iterations, auto-terminating on September 3, 2026.
+- **Additional VM Backup (Wednesday Sept 2, 9:00 AM / Cron: `0 9 2 9 *`):** A one-shot agent that executes a full backup on September 2, 2026, at 9:00 AM, downloading the archive locally and cleaning up VM server space.
 
 ## 4. Hermes Agentic Automations (Internal Cron)
 
