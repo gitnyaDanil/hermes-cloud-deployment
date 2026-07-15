@@ -235,3 +235,47 @@ Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores
 Get-CimInstance Win32_VideoController | Select-Object Name
 ```
 *   **`Win32_VideoController`**: Retrieves the graphic cards installed (e.g. dedicated NVIDIA RTX card vs integrated Intel card) to confirm if local LLM acceleration is supported.
+
+---
+
+## 13. Composio CLI Installation & Authentication (WSL & VM)
+
+This workflow outlines how to install the new Composio CLI and transfer a human-authenticated login session securely from a local WSL environment to the GCP VM.
+
+### 13.1. Installing the Composio CLI (WSL)
+```bash
+curl -fsSL https://composio.dev/install | bash
+```
+*   **`curl -fsSL ... | bash`**: Fetches the official Composio installer script and pipes it to bash. Note: Composio's installation script does not natively support Windows command prompt, so this must be executed in WSL.
+*   **`composio --version`**: Verifies the CLI binary is successfully installed. If the command is unrecognized, reload shell configs with `source ~/.bashrc`.
+
+### 13.2. User Login Session Activation (OAuth)
+```bash
+composio login
+```
+*   **`composio login`**: Opens a browser window locally for a human user to complete the OAuth login flow. This creates a functional user-level authentication token, distinct from tool-scoped Project API Keys (`ak_...`).
+*   **`composio whoami`**: Confirms that your user profile (email and organization context) is active.
+
+### 13.3. Copying SSH Keys into WSL Home
+```bash
+mkdir -p ~/.ssh
+cp /mnt/c/Users/<WINDOWS_USERNAME>/.ssh/<KEY_NAME> ~/.ssh/
+cp /mnt/c/Users/<WINDOWS_USERNAME>/.ssh/<KEY_NAME>.pub ~/.ssh/
+chmod 600 ~/.ssh/<KEY_NAME>
+```
+*   **`mkdir -p ~/.ssh`**: Generates a standard SSH directory inside the WSL user home environment if one does not exist.
+*   **`cp /mnt/c/...`**: Copies your Windows-stored SSH private and public key files into WSL so WSL's SSH client can connect to the VM.
+*   **`chmod 600`**: Minimizes file permissions on the private key, which is a mandatory requirement for SSH security checks.
+
+### 13.4. Transferring the User Session to the VM
+```bash
+scp -i ~/.ssh/<KEY_NAME> ~/.composio/user_data.json <VM_USER>@<VM_IP>:~/.composio/user_data.json
+```
+*   **`scp`**: Securely copies the local OAuth configuration file `user_data.json` containing the user session to the corresponding location on the GCP VM, bypasses the need to run interactive logins directly on the headless server.
+
+### 13.5. Verifying Session on VM
+```bash
+ssh -i ~/.ssh/<KEY_NAME> <VM_USER>@<VM_IP>
+composio whoami
+```
+*   **`composio whoami`**: Run on the VM to verify that the copied user credentials match the authenticated local credentials exactly.

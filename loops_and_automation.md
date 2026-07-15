@@ -27,6 +27,7 @@ Linux servers are designed to kill all background tasks when an SSH connection c
 We have autonomous background agents (cron schedules) running directly on the local machine to manage Git.
 - **9:00 AM Loop (Standup):** An agent wakes up every morning, compiles yesterday's git logs and task progress into `daily_standup.md`, and sends the standup briefing directly to your Telegram chat via the VM's API connection.
 - **5:00 PM Loop (Documentation):** An agent wakes up, reads our chat transcript, and extracts any new terminal commands we learned, formatting them into `command_reference.md`.
+- **5:05 PM Loop (Push Command Reference):** A staggered agent that runs 5 minutes after the documentation loop, committing and pushing any new `command_reference.md` changes in `hermes-portfolio` directly to your remote GitHub repository on the `main` branch.
 - **6:00 PM Loop (Staging):** An agent scans the `hermes-portfolio` folder for changes, and runs `git add .` and `git commit` automatically.
 - **6:05 PM Loop (Push Backup):** A staggered agent that runs 5 minutes after the staging loop, checking `hermes-agent-project` for modifications, committing, and pushing them to your remote GitHub backup repository.
 - **Weekly VM Backup (Saturday 9:00 AM / Cron: `0 9 * * 6`):** An agent wakes up, SSHs into the GCP VM to compress the active folders (excluding heavy dependencies and media caches), downloads the full `tar.gz` archive to your local backups directory with a datestamp using SCP, and purges the remote archive on the VM to save server space. This schedule runs for 7 iterations, auto-terminating on September 3, 2026.
@@ -34,7 +35,7 @@ We have autonomous background agents (cron schedules) running directly on the lo
 
 ## 4. Hermes Agentic Automations (Internal Cron)
 
-**What it does:** Sends a daily morning briefing of your Google Calendar schedule directly to you on Telegram.
+**What it does:** Runs automated background workflows directly in the cloud, interacting with your tools and messaging platforms.
 **How it works:**
 The Hermes Agent is equipped with an internal cron scheduler that runs tasks in the cloud VM context.
 *   **6:00 AM WIB Briefing (Cron: `0 23 * * *` UTC):**
@@ -42,3 +43,9 @@ The Hermes Agent is equipped with an internal cron scheduler that runs tasks in 
     *   Wakes up the agent, calls the **Composio Google Calendar integration** (`GOOGLECALENDAR_FIND_EVENT` / `GOOGLECALENDAR_EVENTS_LIST`) to fetch calendar events from 00:00 to 23:59 Asia/Jakarta time.
     *   Formats the list as a clean, markdown-formatted morning briefing and pushes the notification directly to your Telegram chat.
     *   Automatically falls back to a clean message ("No events scheduled today") if the calendar is empty.
+*   **5:30 PM WIB Spending Tracker (Cron: `30 10 * * *` UTC):**
+    *   Triggered at 10:30 AM UTC daily (corresponding to 5:30 PM WIB local time, delivering the update right before your 6:00 PM quiet hours block).
+    *   Wakes up the agent, calls the **Composio Gmail integration** to scan recent emails from the past 24 hours.
+    *   Extracts purchase receipts, ride-hailing/delivery transactions, online marketplace payment slips, and subscription notifications.
+    *   Logs the date, merchant, and amount into a local SQLite database (`~/spending.db`).
+    *   Pushes a compiled daily spending report directly to your Telegram chat.
